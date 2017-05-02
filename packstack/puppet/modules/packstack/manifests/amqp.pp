@@ -64,24 +64,20 @@ define enable_rabbitmq {
 class packstack::amqp ()
 {
      $amqp = hiera('CONFIG_AMQP_BACKEND')
-
      case $amqp  {
        'rabbitmq': {
          enable_rabbitmq { 'rabbitmq': }
 
           # The following kernel parameters help alleviate some RabbitMQ
           # connection issues
-
-          sysctl::value { 'net.ipv4.tcp_keepalive_intvl':
-            value => '1',
-          }
-
-          sysctl::value { 'net.ipv4.tcp_keepalive_probes':
-            value => '5',
-          }
-
-          sysctl::value { 'net.ipv4.tcp_keepalive_time':
-            value => '5',
+ 
+         # Docker does not support set this sysctl config, apply it in host.
+          if $::virtual != 'lxc' {
+            if $::virtual != 'docker' {
+              sysctl::value { 'net.ipv4.tcp_keepalive_intvl': value => '1', }
+              sysctl::value { 'net.ipv4.tcp_keepalive_probes': value => '5', }
+              sysctl::value { 'net.ipv4.tcp_keepalive_time': value => '5', }
+            }
           }
        }
        default: {}

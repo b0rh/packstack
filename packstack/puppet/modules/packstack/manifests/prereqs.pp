@@ -10,12 +10,12 @@ class packstack::prereqs ()
     package { 'sos':
       ensure => present,
     }
-
-    package { 'audit':
-      ensure => present,
-    } ->
-    service { 'auditd':
-      ensure => running,
-      enable => true,
+    
+# One auditd instance by kernel is allowed. Use host auditd for Docker.
+    if $::virtual != 'lxc' {
+     if $::virtual != 'docker' {
+      package { 'audit': ensure => present, } ->
+      service { 'auditd': ensure => running, enable => true, }
+     }
     }
 }
